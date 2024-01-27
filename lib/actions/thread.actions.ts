@@ -20,7 +20,7 @@ export async function createThread({ text, author, communityId, path }: Params) 
             { _id: 1 }
         );
         const createdThread = await Thread.create({
-            text, author, community: communityId
+            text, author, community: communityIdObject
         });
 
         await User.findByIdAndUpdate(author, {
@@ -49,15 +49,22 @@ export async function fetchThreads(pageNumber = 1, pageSize = 20) {
             .sort({ createdAt: "desc" })
             .skip(skipAmount)
             .limit(pageSize)
-            .populate({ path: "author", model: User })
             .populate({
-                path: "children",
-                populate: {
-                    path: "author",
-                    model: User,
-                    select: "_id name parentId image"
-                }
+                path: "author",
+                model: User,
             })
+            .populate({
+                path: "community",
+                model: Community,
+            })
+            .populate({
+                path: "children", 
+                populate: {
+                    path: "author", 
+                    model: User,
+                    select: "_id name parentId image",
+                },
+            });
 
         const totalPostsCount = await Thread.countDocuments({ parentId: { $in: [null, undefined] } })
         const posts = await postsQuery.exec();
