@@ -58,6 +58,7 @@ const page = async ({ params }: { params: { id: string } }) => {
                             value={tab.value}
                             className="w-full text-light-1"
                         >
+                            {/* @ts-expect-error Server Component */}
                             <ThreadsTab
                                 currentUserId={user.id}
                                 accountId={userInfo.id}

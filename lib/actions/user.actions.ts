@@ -1,9 +1,8 @@
 "use server";
 
-import { User2 } from "lucide-react";
 import { FilterQuery, SortOrder } from "mongoose";
 import { revalidatePath } from "next/cache";
-import { getJsPageSizeInKb } from "next/dist/build/utils";
+import Community from "../models/community.model";
 import Thread from "../models/thread.model";
 import User from "../models/user.model";
 import { connectToDB } from "../mongoose";
@@ -50,10 +49,10 @@ export async function fetchUser(userId:string){
         connectToDB();
         return await User
         .findOne({id:userId})
-        /*.populate({
+        .populate({
             path: "communities",
             model: Community
-        })*/
+        })
     } catch (error: any) {
         throw new Error(`Failed to fetch user ${error.message}`)
     }
@@ -66,15 +65,22 @@ export async function fetchUserPosts(userId: string){
             .populate({
                 path:"threads",
                 model: Thread,
-                populate:{
-                    path:"children",
-                    model:Thread,
-                    populate:{
-                        path:"author",
-                        model:User,
-                        select: "name image id"
+                populate:[
+                    {
+                        path:"community",
+                        model: Community,
+                        select: "name id image_id"
+                    },
+                    {
+                        path:"children",
+                        model:Thread,
+                        populate:{
+                            path:"author",
+                            model:User,
+                            select: "name image id"
+                        }
                     }
-                }
+                ]
             })
             return threads;
     } catch (error:any) {
